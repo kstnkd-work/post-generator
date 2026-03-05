@@ -599,7 +599,7 @@
                     ["rgba(141, 183, 255, 0)", "rgba(141, 183, 255, 0.75)"]
                 );
 
-                // Шрифт Montserrat, жирный 72px (можно подобрать размер)
+                // Шрифт Montserrat, жирный 72px
                 canvas.ctx.font = "bold 72px Montserrat, sans-serif";
                 canvas.ctx.fillStyle = "white";
 
@@ -632,25 +632,33 @@
                 });
 
             } else {
-                // Фиолетовый шаблон (без изменений, кроме адаптации размера эллипса)
+                // Фиолетовый шаблон с градиентом, близким к синему
                 let txt = canvas.text;
                 txt = txt.split("\n").reverse();
                 let counter = 0;
 
-                let height = txt.length * 56 + 140;
+                // Высота градиента зависит от количества строк (примерно как в синем, но чуть ниже)
+                let gradientHeight = txt.length * 56 + 100; // немного ниже, чем в синем
+                // Цвета: снизу #8A6DE9 (фиолетово-синий) с непрозрачностью 75%, сверху прозрачный
+                drawVerticalGradientRect(
+                    canvas.ctx,
+                    0,
+                    canvas.height - gradientHeight,
+                    canvas.width,
+                    gradientHeight,
+                    ["rgba(138, 109, 233, 0)", "rgba(138, 109, 233, 0.75)"]
+                );
 
-                // Эллипс рисуем с сохранением пропорций: ширина = canvas.width, высота = canvas.width / 400 * 267
-                let ellipseHeight = canvas.width / 400 * 267;
-                canvas.ctx.drawImage(canvas.ellipse, 0, canvas.height - height * 1.7, canvas.width, ellipseHeight);
-
-                canvas.ctx.font = "52px Open Sans";
+                // Шрифт Montserrat, жирный 48px (чуть меньше 52)
+                canvas.ctx.font = "bold 48px Montserrat, sans-serif";
                 canvas.ctx.fillStyle = "white";
 
                 txt.forEach(e => {
                     let y = canvas.height - 70 - (counter * 56);
                     counter += 1;
-                    let textWidth = canvas.ctx.measureText(e).width;
-                    canvas.ctx.fillText(e, (canvas.width / 2) - (textWidth / 2), y, 1720);
+                    // Центрируем с ограничением ширины 640px
+                    let x = (canvas.width - 640) / 2;
+                    canvas.ctx.fillText(e, x, y, 640);
                 });
             }
         }
