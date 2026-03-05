@@ -494,7 +494,7 @@
                 <div class="item" onclick="changeTheme(1)" style="color: rgb(0, 122, 255); font-weight: 700;">Синий
                 </div>
                 <div class="item" onclick="changeTheme(2)">Черный</div>
-                <div class="item" onclick="changeTheme(3)">МХ</div>
+                <div class="item" onclick="changeTheme(3)">Фиолетовый</div>
             </div>
             <div class="text">Введите текст: </div>
             <textarea id="cn">Введите текст для отображения в 
@@ -534,15 +534,16 @@
         let canvas = {};
         canvas.text = "";
         canvas.events = [];
-        canvas.width = 1920;
-        canvas.height = canvas.width / 4 * 3;
+        // Фиксированный размер холста 1080x905
+        canvas.width = 1080;
+        canvas.height = 905;
         canvas.file = null;
 
         canvas.updateSize = () => {
             canvas.el = document.querySelector("canvas");
             canvas.el.width = canvas.width;
             canvas.el.height = canvas.height;
-            canvas.el.style.height = (canvas.el.clientWidth / canvas.width * canvas.heigh) + "px";
+            canvas.el.style.height = (canvas.el.clientWidth / canvas.width * canvas.height) + "px";
 
             canvas.ctx = canvas.el.getContext("2d");
         }
@@ -568,71 +569,89 @@
             }
         }
         canvas.update = () => {
-            canvas.width = 1920;
-            canvas.height = Math.floor(canvas.width / canvas.image.width * canvas.image.height);
+            // Размеры уже фиксированы, не меняем их
             canvas.updateSize();
+
+            // Очистка холста чёрным фоном
             canvas.ctx.fillStyle = "#000000";
-            canvas.ctx.fillRect(0, 0, canvas.width, canvas.height)
-            canvas.ctx.drawImage(canvas.image, 0, 0, canvas.width, canvas.height);
+            canvas.ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Рисуем загруженное изображение (растянутое на весь холст)
+            if (canvas.image) {
+                canvas.ctx.drawImage(canvas.image, 0, 0, canvas.width, canvas.height);
+            }
 
             if (selectedTheme == 1) {
+                // Синий шаблон
                 let txt = canvas.text;
                 txt = txt.split("\n").reverse();
                 let counter = 0;
 
+                // Градиент от низа до центра (высота canvas.height/2)
+                // Цвета: снизу #8DB7FF с прозрачностью 75%, сверху прозрачный
+                let gradientHeight = canvas.height / 2;
+                drawVerticalGradientRect(
+                    canvas.ctx,
+                    0,
+                    canvas.height - gradientHeight,
+                    canvas.width,
+                    gradientHeight,
+                    ["rgba(141, 183, 255, 0)", "rgba(141, 183, 255, 0.75)"]
+                );
 
-                let height = txt.length * 76 + 140;
-
-                drawVerticalGradientRect(canvas.ctx, 0, canvas.height - height, canvas.width, height, ["rgba(0, 122, 255, 0)", "rgb(0, 122, 255)"])
-
-                canvas.ctx.font = "72px Dela Gothic One"
-                canvas.ctx.fillStyle = "white"
+                // Шрифт Montserrat, жирный 72px (можно подобрать размер)
+                canvas.ctx.font = "bold 72px Montserrat, sans-serif";
+                canvas.ctx.fillStyle = "white";
 
                 txt.forEach(e => {
                     let y = canvas.height - 70 - (counter * 76);
                     counter += 1;
-                    canvas.ctx.fillText(e, 100, y, 1720)
-                })
+                    // Центрируем текст с максимальной шириной 640px
+                    let x = (canvas.width - 640) / 2;
+                    canvas.ctx.fillText(e, x, y, 640);
+                });
 
             } else if (selectedTheme == 2) {
+                // Чёрный шаблон (без изменений)
                 let txt = canvas.text;
                 txt = txt.split("\n").reverse();
                 let counter = 0;
-
 
                 let height = txt.length * 76 + 140;
 
                 canvas.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-                canvas.ctx.fillRect(0, canvas.height - height - 100, canvas.width, height)
+                canvas.ctx.fillRect(0, canvas.height - height - 100, canvas.width, height);
 
-                canvas.ctx.font = "72px Dela Gothic One"
-                canvas.ctx.fillStyle = "white"
+                canvas.ctx.font = "72px Dela Gothic One";
+                canvas.ctx.fillStyle = "white";
 
                 txt.forEach(e => {
                     let y = canvas.height - 180 - (counter * 76);
                     counter += 1;
-                    canvas.ctx.fillText(e, 100, y, 1720)
-                })
+                    canvas.ctx.fillText(e, 100, y, 1720);
+                });
+
             } else {
+                // Фиолетовый шаблон (без изменений, кроме адаптации размера эллипса)
                 let txt = canvas.text;
                 txt = txt.split("\n").reverse();
                 let counter = 0;
 
-
                 let height = txt.length * 56 + 140;
 
-                canvas.ctx.drawImage(canvas.ellipse, 0, canvas.height - height * 1.7, 1920, 1920 / 400 * 267)
+                // Эллипс рисуем с сохранением пропорций: ширина = canvas.width, высота = canvas.width / 400 * 267
+                let ellipseHeight = canvas.width / 400 * 267;
+                canvas.ctx.drawImage(canvas.ellipse, 0, canvas.height - height * 1.7, canvas.width, ellipseHeight);
 
-
-                canvas.ctx.font = "52px Open Sans"
-                canvas.ctx.fillStyle = "white"
+                canvas.ctx.font = "52px Open Sans";
+                canvas.ctx.fillStyle = "white";
 
                 txt.forEach(e => {
                     let y = canvas.height - 70 - (counter * 56);
                     counter += 1;
                     let textWidth = canvas.ctx.measureText(e).width;
-                    canvas.ctx.fillText(e, (canvas.width / 2) - (textWidth / 2), y, 1720)
-                })
+                    canvas.ctx.fillText(e, (canvas.width / 2) - (textWidth / 2), y, 1720);
+                });
             }
         }
 
@@ -650,7 +669,7 @@
                 title: "Обновление текста",
                 interval: setInterval(canvas.updateText, 1)
             }
-        )
+        );
         canvas.events.push(
             {
                 title: "Обновление слайдера",
@@ -659,7 +678,7 @@
                         document.querySelector(".content .selector").classList = "selector i" + selectedTheme;
                     }, 1)
             }
-        )
+        );
 
         document.addEventListener("DOMContentLoaded", () => {
             document.querySelector("canvas").addEventListener("click", canvas.selectFileClick);
@@ -669,16 +688,17 @@
             pi.src = assets.ellipse;
             pi.onload = () => {
                 canvas.ellipse = pi;
-            }
+            };
 
             let i = new Image();
             i.src = assets.preview;
             i.onload = () => {
                 canvas.image = i;
-                loadFontsFromCSS("https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Open+Sans:wght@800&display=swap")
+                // Добавляем Montserrat в загрузку шрифтов
+                loadFontsFromCSS("https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Open+Sans:wght@800&family=Montserrat:wght@700&display=swap");
                 canvas.update();
-            }
-        })
+            };
+        });
 
 
         let resizeTimer;
